@@ -93,7 +93,7 @@ app.put('/api/persons/:id', (req, res, next) => {
 
 
 app.get('/info', (req, res, next) => {
-	Person.count({})
+	Person.countDocuments({})
 		.then(count => {
 			let res_html = `<p>Phonebook has info for ${count} people</p>` +
 				`<p>${new Date().toString()}</p>`
