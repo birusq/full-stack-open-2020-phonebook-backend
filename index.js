@@ -33,26 +33,11 @@ app.get('/api/persons/:id', (req, res, next) => {
 				res.status(404).end()
 			}
 		})
-		.catch(err => {
-			res.status(400).send({ error: 'malformatted id' })
-			next(err)
-		})
+		.catch(err => next(err))
 })
 
-app.post('/api/persons', (req, res) => {
+app.post('/api/persons', (req, res, next) => {
 	const body = req.body
-
-	if (!body.name) {
-		return res.status(400).json({
-			error: 'name missing'
-		})
-	}
-
-	if (!body.number) {
-		return res.status(400).json({
-			error: 'number missing'
-		})
-	}
 
 	const person = new Person({
 		name: body.name,
@@ -62,6 +47,7 @@ app.post('/api/persons', (req, res) => {
 	person.save().then(savedPerson => {
 		res.json(savedPerson.toJSON())
 	})
+		.catch(err => next(err))
 })
 
 app.delete('/api/persons/:id', (req, res, next) => {
@@ -69,9 +55,7 @@ app.delete('/api/persons/:id', (req, res, next) => {
 		.then(deletedPerson => {
 			res.status(204).end()
 		})
-		.catch(err => {
-			next(err)
-		})
+		.catch(err => next(err))
 })
 
 app.put('/api/persons/:id', (req, res, next) => {
@@ -86,9 +70,7 @@ app.put('/api/persons/:id', (req, res, next) => {
 		.then(updatedPerson => {
 			res.json(updatedPerson.toJSON())
 		})
-		.catch(err => {
-			next(err)
-		})
+		.catch(err => next(err))
 })
 
 
@@ -99,12 +81,7 @@ app.get('/info', (req, res, next) => {
 				`<p>${new Date().toString()}</p>`
 			res.send(res_html)
 		})
-		.catch(err => {
-			let res_html = `<p>Phonebook has info for x people</p>` +
-				`<p>${new Date().toString()}</p>`
-			res.send(res_html)
-			next(err)
-		})
+		.catch(err => next(err))
 })
 
 const unknownEndpoint = (request, response) => {
@@ -114,7 +91,14 @@ const unknownEndpoint = (request, response) => {
 app.use(unknownEndpoint)
 
 const errorHandler = (error, request, response, next) => {
-	console.log(error)
+	console.log(error.message)
+
+	if (error.name === 'CastError') {
+		return response.status(400).send({ error: 'malformatted id' })
+	}
+	else if (error.name === 'ValidationError') {
+		return response.status(400).json({ error: error.message })
+	}
 }
 
 app.use(errorHandler)
