@@ -8,7 +8,7 @@ const Person = require('./models/person')
 
 const app = express()
 
-morgan.token('body', function (req, res) { return JSON.stringify(req.body) })
+morgan.token('body', function (req) { return JSON.stringify(req.body) })
 const logger = morgan(':method :url :status :res[content-length] - :response-time ms :body')
 
 app.use(cors())
@@ -20,7 +20,7 @@ app.get('/api/persons', (req, res) => {
 	Person.find({}).then(persons => {
 		persons = persons.map(person => person.toJSON())
 		res.json(persons)
-	});
+	})
 })
 
 app.get('/api/persons/:id', (req, res, next) => {
@@ -52,7 +52,7 @@ app.post('/api/persons', (req, res, next) => {
 
 app.delete('/api/persons/:id', (req, res, next) => {
 	Person.findByIdAndDelete(req.params.id)
-		.then(deletedPerson => {
+		.then((/*deletedPerson*/) => {
 			res.status(204).end()
 		})
 		.catch(err => next(err))
@@ -90,7 +90,7 @@ const unknownEndpoint = (request, response) => {
 
 app.use(unknownEndpoint)
 
-const errorHandler = (error, request, response, next) => {
+const errorHandler = (error, request, response, /*next*/) => {
 	console.log(error.message)
 
 	if (error.name === 'CastError') {
